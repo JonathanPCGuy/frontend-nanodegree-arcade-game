@@ -13,27 +13,79 @@
     - lives
     - ability to set playing board size
     - difficulty level
+        - the above 2 will require a refactor to allow
+        - a reinit of the game without changing values in js file manually
     - implement moving logs (reverse collision)
 */
 
 
-var Coordinates = function(x, y) {
-    this.x = x;
-    this.y = y;
-}
+
 
 
 var Constants = function() {};
 
-Constants.OBJECT_HEIGHT = 83;
-Constants.OBJECT_WIDTH = 101;
+Constants.ROW_HEIGHT = 83;
+Constants.COLUMN_WIDTH = 101;
 // because the sprites are actually 171 in height, we need to
 // take that into account
-Constants.OBJECT_HEIGHT_BLANK_SPACE = 88;
-Constants.VIEW_WIDTH = 505;
-Constants.VIEW_HEIGHT = 606;
+Constants.OBJECT_PADDING_TOP = 75;
+
+Constants.BACKGROUND_TILE_PADDING_TOP = 50;
+Constants.BACKGROUND_TILE_HEIGHT = 65;
+Constants.BACKGROUND_TILE_PADDING_BOTTOM = 56;
+
+Constants.PLAYER_TILE_PADDING_TOP = 60;
+Constants.PLAYER_TILE_PADDING_BOTTOM = 30;
+
+Constants.ENEMY_TILE_PADDING_TOP = 75;
+Constants.ENEMY_TILE_PADDING_BOTTOM = 15;
+
+//Constants.OBJECT_HEIGHT_UPPER_BLANK_SPACE = 75;
+//Constants.OBJECT_HEIGHT_LOWER_BLANK_SPACE = 40;
+
+Constants.BOTTOM_PADDING = 108;
+Constants.DEFAULT_ROWS = 6;
+Constants.DEFAULT_COLS = 5;
 Constants.LEFT_BOUNDARY = -100;
-Constants.RIGHT_BONDARY = Constants.VIEW_WIDTH + 50;
+Constants.RIGHT_BOUNDARY_PADDING = 50;
+
+// note that for enemies the column value will not be updated
+var Location = function(column, row) {
+    this.setRow(row);
+    this.setColumn(column);
+};
+
+Location.prototype.setRow = function(row) {
+    this.row = row;
+    this.y = Constants.BACKGROUND_TILE_PADDING_TOP + row * Constants.ROW_HEIGHT - Constants.OBJECT_PADDING_TOP;
+};
+
+Location.prototype.setColumn = function(column) {
+    this.column = column;
+    if(column == -1) {
+        this.x = Constants.LEFT_BOUNDARY;
+    }
+    else {
+        this.x = column * Constants.COLUMN_WIDTH;
+    }
+
+};
+
+// http://stackoverflow.com/questions/894860/set-a-default-parameter-value-for-a-javascript-function
+// to determine: move setting of rows/cols to not be in constructor?
+var Options = function(cols, rows) {
+    this.rows = typeof rows !== 'undefined' ? rows : Constants.DEFAULT_ROWS;
+    this.cols = typeof cols !== 'undefined' ? cols : Constants.DEFAULT_COLS;
+    this.setViewSize(this.rows, this.cols);
+};
+
+Options.prototype.setViewSize = function(rows, cols) {
+    this.viewHeight = rows * Constants.ROW_HEIGHT + Constants.BOTTOM_PADDING;
+    this.viewWidth = cols * Constants.COLUMN_WIDTH;
+};
+
+var options = new Options ();
+
 //Constants.collision = function()
 
 var Helpers = function() {};
@@ -42,18 +94,16 @@ Helpers.collision = function(object1, object2) {
     //todo: x-collision
 
     // if objects overlap then we have a collision
-    if(object1.coords.y + Constants.OBJECT_HEIGHT_BLANK_SPACE + Constants.OBJECT_HEIGHT > object2.coords.y + Constants.OBJECT_HEIGHT_BLANK_SPACE
-        && object2.coords.y + Constants.OBJECT_HEIGHT_BLANK_SPACE + Constants.OBJECT_HEIGHT > object1.coords.y + Constants.OBJECT_HEIGHT_BLANK_SPACE
-        && object1.coords.x + Constants.OBJECT_WIDTH > object2.coords.x
-        && object2.coords.x + Constants.OBJECT_WIDTH > object1.coords.x)
+    if( object1.location.row === object2.location.row
+        && object1.location.x + Constants.COLUMN_WIDTH > object2.location.x
+        && object2.location.x + Constants.COLUMN_WIDTH > object1.location.x)
     {
         return true;
     }
 
     // and vice versa
     return false;
-}
-
+};
 
 // Enemies our player must avoid
 var Enemy = function(n) {
@@ -64,10 +114,11 @@ var Enemy = function(n) {
     // a helper we've provided to easily load images
 
     //TODO replace below with constants where applicable
+    // TODO: better enemy generation (more in 1 row? random speeds?)
     this.sprite = 'images/enemy-bug.png';
-    this.coords = new Coordinates(-50, (n+1)*72);
+    this.location = new Location(-1, n+1);
     this.speed = (n+1)*10;
-}
+};
 
 
 //static? per instance?
@@ -81,28 +132,29 @@ Enemy.prototype.update = function(dt) {
     // You should multiply any movement by the dt parameter
     // which will ensure the game runs at the same speed for
     // all computers.
-    this.coords.x += (10 * this.speed * dt)
+    this.location.x += (10 * this.speed * dt)
     //console.log(this.x);
-    if(this.coords.x > Constants.RIGHT_BONDARY)
+    if(this.location.x > options.viewWidth + Constants.RIGHT_BOUNDARY_PADDING)
     {
-        this.coords.x = Constants.LEFT_BOUNDARY; // to do: set it to be negative value of sprite
-        //console.log('reset!');
+        this.location.x = Constants.LEFT_BOUNDARY;
     }
-}
+};
 
 // Draw the enemy on the screen, required method for game
 Enemy.prototype.render = function() {
-    ctx.drawImage(Resources.get(this.sprite), this.coords.x, this.coords.y);
-}
+    ctx.drawImage(Resources.get(this.sprite), this.location.x, this.location.y);
+};
 
 // Now write your own player class
 // This class requires an update(), render() and
 // a handleInput() method.
 var Player = function() {
     this.sprite = 'images/char-boy.png';
-    this.coords = new Coordinates(100, 600);
+
+    //FIXME: location may change
+    this.location = new Location(Math.floor(options.cols/2), options.rows-1);
     this.speed = 10;
-}
+};
 
 // to do: see if any of these functions needs parameters
 Player.prototype.update = function(dt) {
@@ -113,35 +165,36 @@ Player.prototype.update = function(dt) {
         if(Helpers.collision(allEnemies[i], this))
         {
             console.log("collision!");
-            this.coords.y = 600;
+            //FIXME: size may change
+            this.location.setRow(options.rows - 1);
+            this.location.setColumn(Math.floor(options.cols/2));
             break;
         }
     }
-}
+};
 
 Player.prototype.render = function() {
-    ctx.drawImage(Resources.get(this.sprite), this.coords.x, this.coords.y);
-}
+    ctx.drawImage(Resources.get(this.sprite), this.location.x, this.location.y);
+};
 
 Player.prototype.handleInput = function(key) {
 
-    // todo:    left and right
-    //          boundaries check
+    //   todo:       boundaries check
     switch(key){
         case('up'):
-            this.coords.y -= Constants.OBJECT_HEIGHT;
+            this.location.setRow(this.location.row - 1);//.y -= Constants.ROW_HEIGHT;
             break;
         case('down'):
-            this.coords.y += Constants.OBJECT_HEIGHT;
+            this.location.setRow(this.location.row + 1);
             break;
         case('left'):
-            this.coords.x -= Constants.OBJECT_WIDTH;
+            this.location.setColumn(this.location.column - 1);
             break;
         case('right'):
-            this.coords.x += Constants.OBJECT_WIDTH;
+            this.location.setColumn(this.location.column + 1);
             break;
     }
-}
+};
 
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies

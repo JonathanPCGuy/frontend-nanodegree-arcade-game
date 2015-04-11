@@ -25,8 +25,11 @@ var Engine = (function(global) {
         ctx = canvas.getContext('2d'),
         lastTime;
 
-    canvas.width = 505;
-    canvas.height = 606;
+    canvas.width = options.viewWidth;
+    canvas.height = options.viewHeight;
+    // todo: have numRows and numCols set the width and height
+    this.numRows = options.rows;
+    this.numCols = options.cols;
     doc.body.appendChild(canvas);
 
     /* This function serves as the kickoff point for the game loop itself
@@ -107,6 +110,15 @@ var Engine = (function(global) {
         /* This array holds the relative URL to the image used
          * for that particular row of the game level.
          */
+
+        // for now the top row will be water
+        // and the bottom row will be grass
+        // later on we'll change that to make things look better (like more water?)
+
+        var waterBlock = 'images/water-block.png';
+        var stoneBlock = 'images/stone-block.png';
+        var grassBlock = 'images/grass-block.png';
+
         var rowImages = [
                 'images/water-block.png',   // Top row is water
                 'images/stone-block.png',   // Row 1 of 3 of stone
@@ -115,16 +127,30 @@ var Engine = (function(global) {
                 'images/grass-block.png',   // Row 1 of 2 of grass
                 'images/grass-block.png'    // Row 2 of 2 of grass
             ],
-            numRows = 6,
-            numCols = 5,
+            //numRows = 6,
+            //numCols = 5,
             row, col;
 
         /* Loop through the number of rows and columns we've defined above
          * and, using the rowImages array, draw the correct image for that
          * portion of the "grid"
          */
-        for (row = 0; row < numRows; row++) {
-            for (col = 0; col < numCols; col++) {
+        for (row = 0; row < this.numRows; row++) {
+            var image = stoneBlock;
+            switch(row) {
+                case 0:
+                    image = waterBlock;
+                    break;
+
+                case this.numRows - 1:
+                case this.numRows - 2:
+                    image = grassBlock;
+                    break;
+
+                default:
+                    break;
+            }
+            for (col = 0; col < this.numCols; col++) {
                 /* The drawImage function of the canvas' context element
                  * requires 3 parameters: the image to draw, the x coordinate
                  * to start drawing and the y coordinate to start drawing.
@@ -132,7 +158,7 @@ var Engine = (function(global) {
                  * so that we get the benefits of caching these images, since
                  * we're using them over and over.
                  */
-                ctx.drawImage(Resources.get(rowImages[row]), col * 101, row * 83);
+                ctx.drawImage(Resources.get(image), col * 101, row * 83);
             }
         }
 
