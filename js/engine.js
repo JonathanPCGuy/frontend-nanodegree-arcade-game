@@ -29,7 +29,7 @@ var Engine = (function(global) {
     canvas.height = options.viewHeight;
     // todo: have numRows and numCols set the width and height
     this.numRows = options.rows;
-    this.numCols = options.cols;
+    this.numCols = options.columns;
     doc.body.appendChild(canvas);
 
     /* This function serves as the kickoff point for the game loop itself
