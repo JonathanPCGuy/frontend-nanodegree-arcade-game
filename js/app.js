@@ -1,51 +1,23 @@
-/*
-
-    left to do:
-    - reset to constant location
-    - stay in tiles instead of ending up inbetween them
-    - vary rows for enemies each time they go off border
-    - start square for player is in visible area
-    - if reach water put player back to start
-
-    above and beyond:
-    - reach end count (must)
-    maybe:
-    - lives
-    - ability to set playing board size
-    - difficulty level
-        - the above 2 will require a refactor to allow
-        - a reinit of the game without changing values in js file manually
-    - implement moving logs (reverse collision)
-*/
-
-// TODO FIXME: Remove unused values
 var Constants = function() {};
 
 Constants.ROW_HEIGHT = 83;
 Constants.COLUMN_WIDTH = 101;
-// because the sprites are actually 171 in height, we need to
-// take that into account
-Constants.OBJECT_PADDING_TOP = 75;
 
+Constants.VIEW_HEIGHT_PADDING = 108;
+
+Constants.OBJECT_PADDING_TOP = 75;
 Constants.BACKGROUND_TILE_PADDING_TOP = 50;
-Constants.BACKGROUND_TILE_HEIGHT = 65;
 Constants.BACKGROUND_TILE_PADDING_BOTTOM = 56;
 
-Constants.PLAYER_TILE_PADDING_TOP = 60;
-Constants.PLAYER_TILE_PADDING_BOTTOM = 30;
+Constants.LEFT_BOUNDARY = -100;
+Constants.RIGHT_BOUNDARY_PADDING = 50;
 
-Constants.ENEMY_TILE_PADDING_TOP = 75;
-Constants.ENEMY_TILE_PADDING_BOTTOM = 15;
-
-Constants.BOTTOM_PADDING = 108;
 Constants.DEFAULT_NUM_ROWS = 6;
 Constants.DEFAULT_NUM_COLUMNS = 5;
 Constants.DEFAULT_PLAYER_SPRITE = 'images/char-boy.png';
 Constants.DEFAULT_ENEMY_COUNT = 3;
-Constants.LEFT_BOUNDARY = -100;
-Constants.RIGHT_BOUNDARY_PADDING = 50;
-Constants.COLLISION_WIDTH =50;
 
+Constants.COLLISION_WIDTH =50;
 
 var Location = function(column, row) {
     if(column === null || row === null) {
@@ -85,18 +57,15 @@ var Options = function() {
 Options.prototype.setViewSize = function(rows, columns) {
     this.rows = rows ? rows : Constants.DEFAULT_NUM_ROWS;
     this.columns = columns ? columns : Constants.DEFAULT_NUM_COLUMNS;
-    this.viewHeight = this.rows * Constants.ROW_HEIGHT + Constants.BOTTOM_PADDING;
+    this.viewHeight = this.rows * Constants.ROW_HEIGHT + Constants.VIEW_HEIGHT_PADDING;
     this.viewWidth = this.columns * Constants.COLUMN_WIDTH;
 };
 
 var options = new Options ();
 
-//Constants.collision = function()
-
 var Helpers = function() {};
 
 Helpers.collision = function(object1, object2) {
-    //todo: x-collision
 
     // if objects overlap more than the COLLISION_WIDTH then we consider this to be a
     // collision
@@ -106,8 +75,6 @@ Helpers.collision = function(object1, object2) {
     {
         return true;
     }
-
-    // and vice versa
     return false;
 };
 
@@ -171,9 +138,7 @@ Player.prototype.returnToStart = function() {
     this.location.setRow(options.rows - 1);
 };
 
-// to do: see if any of these functions needs parameters
 Player.prototype.update = function(dt) {
-    // handle collissions?
     for(var i = 0; i < allEnemies.length; i++)
     {
         // first try - break when we try to go above enemy
@@ -192,7 +157,6 @@ Player.prototype.render = function() {
 };
 
 Player.prototype.handleInput = function(key) {
-
     var newLocation = new Location(this.location.column, this.location.row);
     switch(key){
         case('up'):
@@ -211,10 +175,8 @@ Player.prototype.handleInput = function(key) {
             return;
     }
     this.destinationCheck(newLocation);
-    //console.log("target destination: row:" + this.location.row + " col:" + this.location.column);
 };
 
-// class function or object function?
 Player.prototype.destinationCheck = function(newLocation) {
     if(newLocation.column >= options.columns || newLocation.column < 0 || newLocation.row >= options.rows || newLocation.rows < 0) {
         console.log("invaild destination, discarding")
@@ -226,10 +188,7 @@ Player.prototype.destinationCheck = function(newLocation) {
     else {
         this.location = newLocation;
     }
-
 };
-
-// when we make this variable we need to be able to cleanup
 
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
@@ -241,7 +200,6 @@ for(var i = 0; i < options.enemyCount; i++) {
 }
 
 var player = new Player();
-
 
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.

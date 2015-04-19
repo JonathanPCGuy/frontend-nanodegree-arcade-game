@@ -27,7 +27,7 @@ var Engine = (function(global) {
 
     canvas.width = options.viewWidth;
     canvas.height = options.viewHeight;
-    // todo: have numRows and numCols set the width and height
+
     this.numRows = options.rows;
     this.numCols = options.columns;
     doc.body.appendChild(canvas);

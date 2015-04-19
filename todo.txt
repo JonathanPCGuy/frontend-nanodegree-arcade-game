@@ -1,0 +1,12 @@
+/*
+
+    above and beyond:
+    - reach end count (must)
+    maybe:
+    - lives
+    - ability to set playing board size
+    - difficulty level
+        - the above 2 will require a refactor to allow
+        - a reinit of the game without changing values in js file manually
+    - implement moving logs (reverse collision)
+*/
