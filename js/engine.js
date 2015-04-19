@@ -30,7 +30,9 @@ var Engine = (function(global) {
 
     this.numRows = options.rows;
     this.numCols = options.columns;
-    doc.body.appendChild(canvas);
+    $(document).ready(function() {
+        $('#gameBoard').append(canvas);
+    });
 
     /* This function serves as the kickoff point for the game loop itself
      * and handles properly calling the update and render methods.

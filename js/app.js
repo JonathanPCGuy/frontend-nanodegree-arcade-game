@@ -1,3 +1,18 @@
+var difficulty = [
+    {
+        "enemyCount": 3
+    },
+    {
+        "enemyCount": 5
+    },
+    {
+        "enemyCount": 7
+    },
+    {
+        "enemyCount": 12
+    }
+];
+
 var Constants = function() {};
 
 Constants.ROW_HEIGHT = 83;
@@ -59,7 +74,17 @@ Options.prototype.setViewSize = function(rows, columns) {
     this.columns = columns ? columns : Constants.DEFAULT_NUM_COLUMNS;
     this.viewHeight = this.rows * Constants.ROW_HEIGHT + Constants.VIEW_HEIGHT_PADDING;
     this.viewWidth = this.columns * Constants.COLUMN_WIDTH;
+    this.difficulty = 0;
 };
+
+Options.prototype.setDifficulty = function(difficulty) {
+
+    if(this.difficulty === difficulty) {
+        return false;
+    }
+    this.difficulty = difficulty;
+    return true;
+}
 
 var options = new Options ();
 
@@ -194,12 +219,18 @@ Player.prototype.destinationCheck = function(newLocation) {
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
 
-var allEnemies = [];
-for(var i = 0; i < options.enemyCount; i++) {
-    allEnemies.push(new Enemy());
-}
+var allEnemies;
+var player;
 
-var player = new Player();
+function initializeObjects() {
+    allEnemies = [];
+    for(var i = 0; i < difficulty[options.difficulty].enemyCount; i++) {
+        allEnemies.push(new Enemy());
+    }
+    player = new Player();
+};
+
+initializeObjects();
 
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
@@ -213,3 +244,36 @@ document.addEventListener('keyup', function(e) {
 
     player.handleInput(allowedKeys[e.keyCode]);
 });
+
+// This listens for button clicks in the difficulty area
+// http://stackoverflow.com/questions/9262827/twitter-bootstrap-onclick-event-on-buttons-radio
+$(document).ready(function() {
+    // todo: prevent reset of game if button doesn't change
+    var newDifficultySet = false;
+    $('#difficultySection label').click(function(e) {
+        console.log(e);
+        switch(e.currentTarget.id) {
+            case('easyDifficulty'):
+                newDifficultySet = options.setDifficulty(0);
+            break;
+
+            case('mediumDifficulty'):
+                newDifficultySet = options.setDifficulty(1);
+            break;
+
+            case('hardDifficulty'):
+                newDifficultySet = options.setDifficulty(2);
+            break;
+            case('insaneDifficulty'):
+                newDifficultySet = options.setDifficulty(3);
+            break;
+        }
+
+        if(newDifficultySet) {
+            // reset game to new difficulty level
+            initializeObjects();
+        }
+    });
+});
+
+// This listens for and handles changes in the difficulty selector
