@@ -6,29 +6,41 @@
     <link rel="stylesheet" href="css/bootstrap.css">
     <script src="js/jQuery.js"></script>
     <script src="js/bootstrap.js"></script>
-</head>
-<body>
-    <script src="js/resources.js"></script>
+        <script src="js/resources.js"></script>
     <script src="js/app.js"></script>
     <script src="js/engine.js"></script>
-    <div id="gameBoard"></div>
-    <div id="gameOptions">
-      <!-- would like to make this dynamic later -->
-      <h3>Difficulty</h3>
-      <div id="difficultySection" class="btn-group" role="group" data-toggle="buttons">
-        <label class="btn btn-primary active" id="easyDifficulty">
-          <input type="radio" name="options" autocomplete="off" value="1" checked>Easy
-        </label>
-        <label class="btn btn-primary" id="mediumDifficulty" >
-          <input type="radio" name="options" autocomplete="off" value="2" checked>Medium
-        </label>
-        <label class="btn btn-primary" id="hardDifficulty">
-          <input type="radio" name="options"  autocomplete="off" value="3" checked>Hard
-        </label>
-        <label class="btn btn-primary" id="insaneDifficulty">
-          <input type="radio" name="options"  autocomplete="off" value="4" checked>Insane
-        </label>
+</head>
+<body>
+  <div class="container">
+    <main class="row">
+    <!-- TODO: align text, add lives, game over message-->
+      <div class="col-md-10 center-block" >
+        <div id="gameBoard"></div>
       </div>
-    </div>
+      <div class="col-md-2 align-top-gameBoard" id="scoreContainer">
+        <h1 id="score"></h1>
+        <h1 id="lives"></h1>
+      </div>
+    </main>
+    <section class="row">
+      <div class="col-md-12" id="gameOptions">
+        <h3>Difficulty</h3>
+        <div id="difficultySection" class="btn-group" role="group" data-toggle="buttons">
+          <label class="btn btn-primary active" id="easyDifficulty">
+            <input type="radio" name="options" autocomplete="off" value="1" checked>Easy
+          </label>
+          <label class="btn btn-primary" id="mediumDifficulty" >
+            <input type="radio" name="options" autocomplete="off" value="2" checked>Medium
+          </label>
+          <label class="btn btn-primary" id="hardDifficulty">
+            <input type="radio" name="options"  autocomplete="off" value="3" checked>Hard
+          </label>
+          <label class="btn btn-primary" id="insaneDifficulty">
+            <input type="radio" name="options"  autocomplete="off" value="4" checked>Insane
+          </label>
+        </div>
+      </div>
+    </section>
+  </div>
 </body>
 </html>

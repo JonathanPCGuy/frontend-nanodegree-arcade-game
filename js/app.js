@@ -169,7 +169,7 @@ Player.prototype.update = function(dt) {
         // first try - break when we try to go above enemy
         if(Helpers.collision(allEnemies[i], this))
         {
-            console.log("collision!");
+            gameState.lifeLoss();
             this.location.setRow(options.rows - 1);
             this.location.setColumn(Math.floor(options.columns/2));
             break;
@@ -204,16 +204,41 @@ Player.prototype.handleInput = function(key) {
 
 Player.prototype.destinationCheck = function(newLocation) {
     if(newLocation.column >= options.columns || newLocation.column < 0 || newLocation.row >= options.rows || newLocation.rows < 0) {
-        console.log("invaild destination, discarding")
         return;
     }
     else if (newLocation.row == 0) {
+        gameState.increaseScore(1);
         this.location.setRow(options.rows -1);
     }
     else {
         this.location = newLocation;
     }
 };
+
+var GameState = function() {
+    this.score = 0;
+    this.lives = 3;
+};
+
+GameState.prototype.increaseScore = function(value) {
+    this.score += value;
+    this.updateScore();
+};
+
+GameState.prototype.updateScore = function() {
+    $('#score').html('Score: ' + this.score);
+};
+
+GameState.prototype.lifeLoss = function() {
+    this.lives --;
+    this.updateLives();
+};
+
+GameState.prototype.updateLives = function() {
+    $('#lives').html('Lives: ' + this.lives);
+};
+
+var gameState = new GameState();
 
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
@@ -248,6 +273,9 @@ document.addEventListener('keyup', function(e) {
 // This listens for button clicks in the difficulty area
 // http://stackoverflow.com/questions/9262827/twitter-bootstrap-onclick-event-on-buttons-radio
 $(document).ready(function() {
+
+    gameState.updateScore();
+    gameState.updateLives();
     // todo: prevent reset of game if button doesn't change
     var newDifficultySet = false;
     $('#difficultySection label').click(function(e) {
