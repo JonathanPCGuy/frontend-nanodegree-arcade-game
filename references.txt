@@ -1,0 +1,8 @@
+http://stackoverflow.com/questions/9262827/twitter-bootstrap-onclick-event-on-buttons-radio
+-how to get buttons to work like radio (via bootstrap)
+
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
+-how to generate a random value
+
+http://getbootstrap.com/javascript/#modals
+-how to use modal feature from bootstrap; modal example used for game over dialog

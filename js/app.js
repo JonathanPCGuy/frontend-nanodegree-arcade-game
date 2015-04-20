@@ -1,39 +1,46 @@
-var difficulty = [
-    {
-        "enemyCount": 3
-    },
-    {
-        "enemyCount": 5
-    },
-    {
-        "enemyCount": 7
-    },
-    {
-        "enemyCount": 12
-    }
-];
+// TODO: make use of other assets and add new gametypes
 
-var Constants = function() {};
+// holds constants related to display aspects of the games
+var DisplayConstants = {
+    ROW_HEIGHT : 83,
+    COLUMN_WIDTH : 101,
+    VIEW_HEIGHT_PADDING : 108,
+    OBJECT_PADDING_TOP : 75,
+    BACKGROUND_TILE_PADDING_TOP : 50,
+    BACKGROUND_TILE_PADDING_BOTTOM : 56,
+    LEFT_BOUNDARY : -100,
+    RIGHT_BOUNDARY_PADDING : 50,
+    DEFAULT_NUM_ROWS : 6,
+    DEFAULT_NUM_COLUMNS : 5,
+    DEFAULT_PLAYER_SPRITE : 'images/char-boy.png',
+    DEFAULT_ENEMY_COUNT : 3,
+    COLLISION_WIDTH : 50
+};
 
-Constants.ROW_HEIGHT = 83;
-Constants.COLUMN_WIDTH = 101;
+// holds constants related to the logic/setting of the game
+var GameConstants = {
+    // although there is only 1 parameter in each element,
+    // it allows the flexibility to add additional parameters to
+    // difficulty settings (like lives, enemy behavior, etc.)
+    DIFFICULTY : [
+        {
+            "enemyCount": 3
+        },
+        {
+            "enemyCount": 5
+        },
+        {
+            "enemyCount": 7
+        },
+        {
+            "enemyCount": 12
+        }
+    ],
+    STARTING_LIVES : 3
+};
 
-Constants.VIEW_HEIGHT_PADDING = 108;
-
-Constants.OBJECT_PADDING_TOP = 75;
-Constants.BACKGROUND_TILE_PADDING_TOP = 50;
-Constants.BACKGROUND_TILE_PADDING_BOTTOM = 56;
-
-Constants.LEFT_BOUNDARY = -100;
-Constants.RIGHT_BOUNDARY_PADDING = 50;
-
-Constants.DEFAULT_NUM_ROWS = 6;
-Constants.DEFAULT_NUM_COLUMNS = 5;
-Constants.DEFAULT_PLAYER_SPRITE = 'images/char-boy.png';
-Constants.DEFAULT_ENEMY_COUNT = 3;
-
-Constants.COLLISION_WIDTH =50;
-
+// defines location in terms of column and rows
+// actual display location on the canvas is calculated behind the scenes
 var Location = function(column, row) {
     if(column === null || row === null) {
         return;
@@ -44,7 +51,7 @@ var Location = function(column, row) {
 
 Location.prototype.setRow = function(row) {
     this.row = row;
-    this.y = Constants.BACKGROUND_TILE_PADDING_TOP + row * Constants.ROW_HEIGHT - Constants.OBJECT_PADDING_TOP;
+    this.y = DisplayConstants.BACKGROUND_TILE_PADDING_TOP + row * DisplayConstants.ROW_HEIGHT - DisplayConstants.OBJECT_PADDING_TOP;
 };
 
 // note that for enemies the column value will not be updated when it moves as the value is
@@ -52,28 +59,26 @@ Location.prototype.setRow = function(row) {
 Location.prototype.setColumn = function(column) {
     this.column = column;
     if(column == -1) {
-        this.x = Constants.LEFT_BOUNDARY;
+        this.x = DisplayConstants.LEFT_BOUNDARY;
     }
     else {
-        this.x = column * Constants.COLUMN_WIDTH;
+        this.x = column * DisplayConstants.COLUMN_WIDTH;
     }
 
 };
 
-// http://stackoverflow.com/questions/894860/set-a-default-parameter-value-for-a-javascript-function
-// to determine: move setting of rows/columns to not be in constructor?
 var Options = function() {
-    this.playerSprite = Constants.DEFAULT_PLAYER_SPRITE;
-    this.enemyCount = Constants.DEFAULT_ENEMY_COUNT;
+    this.playerSprite = DisplayConstants.DEFAULT_PLAYER_SPRITE;
+    this.enemyCount = DisplayConstants.DEFAULT_ENEMY_COUNT;
     this.setViewSize();
     console.log("options done");
 };
 
 Options.prototype.setViewSize = function(rows, columns) {
-    this.rows = rows ? rows : Constants.DEFAULT_NUM_ROWS;
-    this.columns = columns ? columns : Constants.DEFAULT_NUM_COLUMNS;
-    this.viewHeight = this.rows * Constants.ROW_HEIGHT + Constants.VIEW_HEIGHT_PADDING;
-    this.viewWidth = this.columns * Constants.COLUMN_WIDTH;
+    this.rows = rows ? rows : DisplayConstants.DEFAULT_NUM_ROWS;
+    this.columns = columns ? columns : DisplayConstants.DEFAULT_NUM_COLUMNS;
+    this.viewHeight = this.rows * DisplayConstants.ROW_HEIGHT + DisplayConstants.VIEW_HEIGHT_PADDING;
+    this.viewWidth = this.columns * DisplayConstants.COLUMN_WIDTH;
     this.difficulty = 0;
 };
 
@@ -82,6 +87,7 @@ Options.prototype.setDifficulty = function(difficulty) {
     if(this.difficulty === difficulty) {
         return false;
     }
+
     this.difficulty = difficulty;
     return true;
 }
@@ -95,16 +101,14 @@ Helpers.collision = function(object1, object2) {
     // if objects overlap more than the COLLISION_WIDTH then we consider this to be a
     // collision
     if( object1.location.row === object2.location.row
-        && object1.location.x + Constants.COLLISION_WIDTH > object2.location.x
-        && object2.location.x + Constants.COLLISION_WIDTH > object1.location.x)
+        && object1.location.x + DisplayConstants.COLLISION_WIDTH > object2.location.x
+        && object2.location.x + DisplayConstants.COLLISION_WIDTH > object1.location.x)
     {
         return true;
     }
     return false;
 };
 
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
-// Returns a random integer between min (included) and max (excluded)
 Helpers.randomInteger = function(min, max) {
     return Math.floor(Math.random() * (max - min)) + min;
 };
@@ -130,7 +134,7 @@ Enemy.prototype.update = function(dt) {
     // all computers.
     this.location.x += (10 * this.speed * dt)
     //console.log(this.x);
-    if(this.location.x > options.viewWidth + Constants.RIGHT_BOUNDARY_PADDING)
+    if(this.location.x > options.viewWidth + DisplayConstants.RIGHT_BOUNDARY_PADDING)
     {
         this.setNewParams();
     }
@@ -138,7 +142,7 @@ Enemy.prototype.update = function(dt) {
 
 // move enemy back to left side, and set new random row and speed
 Enemy.prototype.setNewParams = function() {
-    this.location.x = Constants.LEFT_BOUNDARY;
+    this.location.x = DisplayConstants.LEFT_BOUNDARY;
     this.location.setRow(Helpers.randomInteger(1, options.rows -2));
     this.speed = Helpers.randomInteger(15, 70);
 };
@@ -166,7 +170,6 @@ Player.prototype.returnToStart = function() {
 Player.prototype.update = function(dt) {
     for(var i = 0; i < allEnemies.length; i++)
     {
-        // first try - break when we try to go above enemy
         if(Helpers.collision(allEnemies[i], this))
         {
             gameState.lifeLoss();
@@ -215,9 +218,10 @@ Player.prototype.destinationCheck = function(newLocation) {
     }
 };
 
+// holds the state of the game (score, lives, etc.)
 var GameState = function() {
     this.score = 0;
-    this.lives = 3;
+    this.lives = GameConstants.STARTING_LIVES;
 };
 
 GameState.prototype.increaseScore = function(value) {
@@ -231,6 +235,14 @@ GameState.prototype.updateScore = function() {
 
 GameState.prototype.lifeLoss = function() {
     this.lives --;
+    if(this.lives < 0) {
+        // reset score and lives, and display the game over modal
+        $('#yourScore').text('Your score:' + this.score);
+        this.score = 0;
+        this.updateScore();
+        this.lives = GameConstants.STARTING_LIVES;
+        $('#gameOver').modal();
+    }
     this.updateLives();
 };
 
@@ -249,7 +261,7 @@ var player;
 
 function initializeObjects() {
     allEnemies = [];
-    for(var i = 0; i < difficulty[options.difficulty].enemyCount; i++) {
+    for(var i = 0; i < GameConstants.DIFFICULTY[options.difficulty].enemyCount; i++) {
         allEnemies.push(new Enemy());
     }
     player = new Player();
@@ -270,13 +282,12 @@ document.addEventListener('keyup', function(e) {
     player.handleInput(allowedKeys[e.keyCode]);
 });
 
-// This listens for button clicks in the difficulty area
-// http://stackoverflow.com/questions/9262827/twitter-bootstrap-onclick-event-on-buttons-radio
+// This listens for button clicks in the difficulty area, and handles
+// difficulty change events
 $(document).ready(function() {
 
     gameState.updateScore();
     gameState.updateLives();
-    // todo: prevent reset of game if button doesn't change
     var newDifficultySet = false;
     $('#difficultySection label').click(function(e) {
         console.log(e);
@@ -303,5 +314,3 @@ $(document).ready(function() {
         }
     });
 });
-
-// This listens for and handles changes in the difficulty selector

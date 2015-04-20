@@ -6,26 +6,26 @@
     <link rel="stylesheet" href="css/bootstrap.css">
     <script src="js/jQuery.js"></script>
     <script src="js/bootstrap.js"></script>
-        <script src="js/resources.js"></script>
+    <script src="js/resources.js"></script>
     <script src="js/app.js"></script>
     <script src="js/engine.js"></script>
 </head>
 <body>
   <div class="container">
     <main class="row">
-    <!-- TODO: align text, add lives, game over message-->
       <div class="col-md-10 center-block" >
+        <!-- div for game canvas-->
         <div id="gameBoard"></div>
       </div>
-      <div class="col-md-2 align-top-gameBoard" id="scoreContainer">
+      <div class="col-md-2 align-top-gameboard" id="scoreContainer">
         <h1 id="score"></h1>
         <h1 id="lives"></h1>
       </div>
     </main>
-    <section class="row">
+    <footer class="row">
       <div class="col-md-12" id="gameOptions">
         <h3>Difficulty</h3>
-        <div id="difficultySection" class="btn-group" role="group" data-toggle="buttons">
+        <div class="btn-group" id="difficultySection" role="group" data-toggle="buttons">
           <label class="btn btn-primary active" id="easyDifficulty">
             <input type="radio" name="options" autocomplete="off" value="1" checked>Easy
           </label>
@@ -40,7 +40,23 @@
           </label>
         </div>
       </div>
-    </section>
+    </footer>
+  </div>
+  <!-- game over dialog -->
+  <div class="modal fade" id="gameOver" tabindex="-1" role="dialog" aria-labelledby="gameOverLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <header class="modal-header">
+          <h1 id="gameOverLabel">Game Over!</h1>
+        </header>
+        <div class="modal-body">
+          <h3 id="yourScore"></h3>
+        </div>
+        <footer class="modal-footer">
+          <button type="button" class="btn btn-primary" data-dismiss="modal">Start New Game</button>
+        </footer>
+      </div>
+    </div>
   </div>
 </body>
 </html>

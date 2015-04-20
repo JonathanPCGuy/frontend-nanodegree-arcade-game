@@ -387,10 +387,12 @@
     "responsive-utilities.less",
     "button-groups.less",
     "input-groups.less",
-    "alerts.less"
+    "alerts.less",
+    "modals.less"
   ],
   "js": [
-    "button.js"
+    "button.js",
+    "modal.js"
   ],
-  "customizerUrl": "http://getbootstrap.com/customize/?id=40e72f20eb56b2c0fa1c"
+  "customizerUrl": "http://getbootstrap.com/customize/?id=c629f578bbd0896eaf37"
 }

@@ -1,3 +1,6 @@
+// TODO: guide for game to show how to run/"install", how to play, etc.
+
+
 frontend-nanodegree-arcade-game
 ===============================
 
