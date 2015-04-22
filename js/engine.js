@@ -99,6 +99,9 @@ var Engine = (function(global) {
         allEnemies.forEach(function(enemy) {
             enemy.update(dt);
         });
+        allRiverStones.forEach(function(riverStone) {
+            riverStone.update(dt);
+        });
         player.update();
     }
 
@@ -121,17 +124,12 @@ var Engine = (function(global) {
         var stoneBlock = 'images/stone-block.png';
         var grassBlock = 'images/grass-block.png';
 
-        var rowImages = [
-                'images/water-block.png',   // Top row is water
-                'images/stone-block.png',   // Row 1 of 3 of stone
-                'images/stone-block.png',   // Row 2 of 3 of stone
-                'images/stone-block.png',   // Row 3 of 3 of stone
-                'images/grass-block.png',   // Row 1 of 2 of grass
-                'images/grass-block.png'    // Row 2 of 2 of grass
-            ],
-            //numRows = 6,
-            //numCols = 5,
-            row, col;
+        var row, col;
+
+        /*
+            How to get
+
+        */
 
         /* Loop through the number of rows and columns we've defined above
          * and, using the rowImages array, draw the correct image for that
@@ -141,6 +139,10 @@ var Engine = (function(global) {
             var image = stoneBlock;
             switch(row) {
                 case 0:
+                    image = grassBlock;
+                    break;
+                case 1:
+                case 2:
                     image = waterBlock;
                     break;
 
@@ -162,6 +164,14 @@ var Engine = (function(global) {
                  */
                 ctx.drawImage(Resources.get(image), col * 101, row * 83);
             }
+
+            // if there are logs in the row draw them
+            // TODO; flag so we don't check again if it has been drawn
+            allRiverStones.forEach(function(riverStone) {
+                if(riverStone.location.row == row) {
+                    riverStone.render();
+                }
+            });
         }
 
 

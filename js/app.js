@@ -114,22 +114,41 @@ Helpers.randomInteger = function(min, max) {
     return Math.floor(Math.random() * (max - min)) + min;
 };
 
-// Enemies our player must avoid
-var Enemy = function() {
+// Base class for moving entities in the game
+var MovingEntity = function() {
     // Variables applied to each of our instances go here,
     // we've provided one for you to get started
 
     // The image/sprite for our enemies, this uses
     // a helper we've provided to easily load images
 
-
     this.location = new Location(null, null);
     this.setNewParams();
 };
 
+// put moving entity on the right or left side, and set new random row and speed
+MovingEntity.prototype.setNewParams = function() {
+
+    this.location.setRow(Helpers.randomInteger(this.minRow, this.maxRow));
+    this.speed = Helpers.randomInteger(15, 70);
+
+    // set the direction of the enemy to go right or left
+    if(Helpers.randomInteger(0,2) == 0) {
+        this.location.x = DisplayConstants.LEFT_BOUNDARY;
+        this.movingRight = true;
+        this.sprite =this.forwardSprite;
+    }
+    else {
+        this.location.x = options.viewWidth + DisplayConstants.RIGHT_BOUNDARY_PADDING;
+        this.speed = this.speed * -1;
+        this.movingRight = false;
+        this.sprite = this.reverseSprite;
+    }
+};
+
 // Update the enemy's position, required method for game
 // Parameter: dt, a time delta between ticks
-Enemy.prototype.update = function(dt) {
+MovingEntity.prototype.update = function(dt) {
     // You should multiply any movement by the dt parameter
     // which will ensure the game runs at the same speed for
     // all computers.
@@ -142,31 +161,37 @@ Enemy.prototype.update = function(dt) {
     }
 };
 
-// put enemy on the right or left side, and set new random row and speed
-Enemy.prototype.setNewParams = function() {
-
-    this.location.setRow(Helpers.randomInteger(1, options.rows -2));
-    this.speed = Helpers.randomInteger(15, 70);
-
-    // set the direction of the enemy to go right or left
-    if(Helpers.randomInteger(0,2) == 0) {
-        this.location.x = DisplayConstants.LEFT_BOUNDARY;
-        this.movingRight = true;
-        this.sprite = 'images/enemy-bug.png';
-    }
-    else {
-        this.location.x = options.viewWidth + DisplayConstants.RIGHT_BOUNDARY_PADDING;
-        this.speed = this.speed * -1;
-        this.movingRight = false;
-        this.sprite = 'images/enemy-bug-reverse.png';
-    }
-
-};
-
 // Draw the enemy on the screen, required method for game
-Enemy.prototype.render = function() {
+MovingEntity.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.location.x, this.location.y);
 };
+// TODO: move constants to constants variable
+// Moving river stones
+var RiverStone = function() {
+    this.forwardSprite = 'images/stone-block.png';
+    this.reverseSprite = 'images/stone-block.png';
+    this.minRow = 1;
+    this.maxRow =3;
+    MovingEntity.call(this);
+};
+
+RiverStone.prototype = Object.create(MovingEntity.prototype);
+RiverStone.prototype.constructor = MovingEntity;
+
+// Enemies our player must avoid
+var Enemy = function() {
+
+    this.forwardSprite = 'images/enemy-bug.png';
+    this.reverseSprite = 'images/enemy-bug-reverse.png'
+    this.minRow = 3;
+    this.maxRow = 6;
+    MovingEntity.call(this);
+};
+
+Enemy.prototype = Object.create(MovingEntity.prototype);
+Enemy.prototype.constructor = MovingEntity;
+
+
 
 // Now write your own player class
 // This class requires an update(), render() and
@@ -274,12 +299,16 @@ var gameState = new GameState();
 
 var allEnemies;
 var player;
+var allRiverStones;
 
 function initializeObjects() {
     allEnemies = [];
     for(var i = 0; i < GameConstants.DIFFICULTY[options.difficulty].enemyCount; i++) {
         allEnemies.push(new Enemy());
     }
+    allRiverStones = [];
+    allRiverStones.push(new RiverStone());
+    allRiverStones.push(new RiverStone());
     player = new Player();
 };
 
