@@ -6,3 +6,8 @@ https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects
 
 http://getbootstrap.com/javascript/#modals
 -how to use modal feature from bootstrap; modal example used for game over dialog
+
+http://stackoverflow.com/questions/7918803/flip-a-sprite-in-canvas
+-was looking to see how to flip a sprite, but then it said to not to do this for a game repeatedly.
+-will pre-flip enemy bug image
+-could flip it one time and save for future use...

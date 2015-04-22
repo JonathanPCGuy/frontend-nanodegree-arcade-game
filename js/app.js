@@ -10,8 +10,8 @@ var DisplayConstants = {
     BACKGROUND_TILE_PADDING_BOTTOM : 56,
     LEFT_BOUNDARY : -100,
     RIGHT_BOUNDARY_PADDING : 50,
-    DEFAULT_NUM_ROWS : 6,
-    DEFAULT_NUM_COLUMNS : 5,
+    DEFAULT_NUM_ROWS : 8,
+    DEFAULT_NUM_COLUMNS : 7,
     DEFAULT_PLAYER_SPRITE : 'images/char-boy.png',
     DEFAULT_ENEMY_COUNT : 3,
     COLLISION_WIDTH : 50
@@ -109,6 +109,7 @@ Helpers.collision = function(object1, object2) {
     return false;
 };
 
+// calculates a random integer between min (inclusive) and max (exclusive)
 Helpers.randomInteger = function(min, max) {
     return Math.floor(Math.random() * (max - min)) + min;
 };
@@ -121,7 +122,7 @@ var Enemy = function() {
     // The image/sprite for our enemies, this uses
     // a helper we've provided to easily load images
 
-    this.sprite = 'images/enemy-bug.png';
+
     this.location = new Location(null, null);
     this.setNewParams();
 };
@@ -134,17 +135,32 @@ Enemy.prototype.update = function(dt) {
     // all computers.
     this.location.x += (10 * this.speed * dt)
     //console.log(this.x);
-    if(this.location.x > options.viewWidth + DisplayConstants.RIGHT_BOUNDARY_PADDING)
+    if(this.location.x > options.viewWidth + DisplayConstants.RIGHT_BOUNDARY_PADDING ||
+        this.location.x < DisplayConstants.LEFT_BOUNDARY)
     {
         this.setNewParams();
     }
 };
 
-// move enemy back to left side, and set new random row and speed
+// put enemy on the right or left side, and set new random row and speed
 Enemy.prototype.setNewParams = function() {
-    this.location.x = DisplayConstants.LEFT_BOUNDARY;
+
     this.location.setRow(Helpers.randomInteger(1, options.rows -2));
     this.speed = Helpers.randomInteger(15, 70);
+
+    // set the direction of the enemy to go right or left
+    if(Helpers.randomInteger(0,2) == 0) {
+        this.location.x = DisplayConstants.LEFT_BOUNDARY;
+        this.movingRight = true;
+        this.sprite = 'images/enemy-bug.png';
+    }
+    else {
+        this.location.x = options.viewWidth + DisplayConstants.RIGHT_BOUNDARY_PADDING;
+        this.speed = this.speed * -1;
+        this.movingRight = false;
+        this.sprite = 'images/enemy-bug-reverse.png';
+    }
+
 };
 
 // Draw the enemy on the screen, required method for game
