@@ -1,5 +1,8 @@
 // TODO: make use of other assets and add new gametypes
 
+
+// TODO: Final project will allow classic (as shown in video) and enhanced (moving river)
+
 // holds constants related to display aspects of the games
 var DisplayConstants = {
     ROW_HEIGHT : 83,
@@ -36,22 +39,18 @@ var GameConstants = {
             "enemyCount": 12
         }
     ],
-    STARTING_LIVES : 3
+    STARTING_LIVES : 3,
+    MOVING_LOG_SPEED : 15
 };
 
 // defines location in terms of column and rows
 // actual display location on the canvas is calculated behind the scenes
-var Location = function(column, row) {
-    if(column === null || row === null) {
-        return;
-    }
-    this.setRow(row);
-    this.setColumn(column);
-};
+var Location = function() {};
 
-Location.prototype.setRow = function(row) {
+Location.prototype.setRow = function(row, offset) {
+    var offset = offset || 0;
     this.row = row;
-    this.y = DisplayConstants.BACKGROUND_TILE_PADDING_TOP + row * DisplayConstants.ROW_HEIGHT - DisplayConstants.OBJECT_PADDING_TOP;
+    this.y = DisplayConstants.BACKGROUND_TILE_PADDING_TOP + row * DisplayConstants.ROW_HEIGHT - DisplayConstants.OBJECT_PADDING_TOP + offset;
 };
 
 // note that for enemies the column value will not be updated when it moves as the value is
@@ -115,25 +114,39 @@ Helpers.randomInteger = function(min, max) {
 };
 
 // Base class for moving entities in the game
-var MovingEntity = function() {
+var MovingEntity = function(startingColumn) {
+
+    this.yOffset = this.yOffset || 0;
     // Variables applied to each of our instances go here,
     // we've provided one for you to get started
 
     // The image/sprite for our enemies, this uses
     // a helper we've provided to easily load images
 
-    this.location = new Location(null, null);
+    this.location = Object.create(Location.prototype);
+    if (typeof startingColumn !== 'undefined') {
+        this.location.setColumn(startingColumn);
+    }
+
     this.setNewParams();
 };
 
-// put moving entity on the right or left side, and set new random row and speed
+// put moving entity on the right or left side, and set new random row and speed if enemy
+// if moving log, keep same speed and direction
 MovingEntity.prototype.setNewParams = function() {
 
-    this.location.setRow(Helpers.randomInteger(this.minRow, this.maxRow));
-    this.speed = Helpers.randomInteger(15, 70);
+    if (this.isMovingLog) {
+        this.speed = GameConstants.MOVING_LOG_SPEED;
+        this.location.setRow(this.row, this.yOffset);
+    }
+    else {
+        this.location.setRow(Helpers.randomInteger(this.minRow, this.maxRow), this.yOffset);
+        this.speed =  Helpers.randomInteger(15, 70);
+    }
+    // set the direction of the entity to go right or left
+    // if entity is in middle of field, do not adjust x location
 
-    // set the direction of the enemy to go right or left
-    if(Helpers.randomInteger(0,2) == 0) {
+    if(Helpers.randomInteger(0,2) == 0 || this.isMovingLog && this.movingRight) {
         this.location.x = DisplayConstants.LEFT_BOUNDARY;
         this.movingRight = true;
         this.sprite =this.forwardSprite;
@@ -167,16 +180,31 @@ MovingEntity.prototype.render = function() {
 };
 // TODO: move constants to constants variable
 // Moving river stones
-var RiverStone = function() {
-    this.forwardSprite = 'images/stone-block.png';
-    this.reverseSprite = 'images/stone-block.png';
+var RiverStone = function(row, startingColumn, movingRight) {
+    this.sprite = 'images/stone-block.png';
     this.minRow = 1;
-    this.maxRow =3;
-    MovingEntity.call(this);
+    this.maxRow = 3;
+    this.row = row;
+    this.movingRight = movingRight;
+    this.yOffset = -DisplayConstants.BACKGROUND_TILE_PADDING_TOP + DisplayConstants.OBJECT_PADDING_TOP;
+    this.isMovingLog = true;
+    this.speed = this.movingRight ? GameConstants.MOVING_LOG_SPEED : -GameConstants.MOVING_LOG_SPEED;
+    MovingEntity.call(this, startingColumn);
+    this.location.setRow(this.row, this.yOffset);
+    this.location.setColumn(startingColumn);
 };
 
 RiverStone.prototype = Object.create(MovingEntity.prototype);
 RiverStone.prototype.constructor = MovingEntity;
+
+RiverStone.prototype.setNewParams = function() {
+    if( this.movingRight) {
+        this.location.x = DisplayConstants.LEFT_BOUNDARY;
+    }
+    else {
+        this.location.x = options.viewWidth + DisplayConstants.RIGHT_BOUNDARY_PADDING;
+    }
+};
 
 // Enemies our player must avoid
 var Enemy = function() {
@@ -198,7 +226,6 @@ Enemy.prototype.constructor = MovingEntity;
 // a handleInput() method.
 var Player = function() {
     this.sprite = options.playerSprite;
-
     this.location = new Location(null, null);
     this.returnToStart();
 };
@@ -226,7 +253,9 @@ Player.prototype.render = function() {
 };
 
 Player.prototype.handleInput = function(key) {
-    var newLocation = new Location(this.location.column, this.location.row);
+    var newLocation = new Location();
+    newLocation.setRow(this.location.row);
+    newLocation.setColumn(this.location.column);
     switch(key){
         case('up'):
             newLocation.setRow(this.location.row - 1);
@@ -307,8 +336,11 @@ function initializeObjects() {
         allEnemies.push(new Enemy());
     }
     allRiverStones = [];
-    allRiverStones.push(new RiverStone());
-    allRiverStones.push(new RiverStone());
+    // 4 stones each row
+    for(var i = 0; i < 4; i++) {
+        allRiverStones.push(new RiverStone(1, i * 2, true));
+        allRiverStones.push(new RiverStone(2, i * 2, false));
+    }
     player = new Player();
 };
 
