@@ -99,15 +99,10 @@ var Engine = (function(global) {
         allEnemies.forEach(function(enemy) {
             enemy.update(dt);
         });
-
-        // if it has been an extremely long time since the last update,
-        // do not move riverstones; otherwise they end up all on top
-        // of each other
-        // still not optimal but works well enough
         allRiverStones.forEach(function(riverStone) {
-            riverStone.update(dt > 0.5 ? 0 : dt);
+            riverStone.update(dt);
         });
-        player.update(dt);
+        player.update();
     }
 
     /* This function initially draws the "game level", it will then call
