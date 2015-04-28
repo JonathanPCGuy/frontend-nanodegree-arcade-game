@@ -13,8 +13,8 @@ var DisplayConstants = {
     BACKGROUND_TILE_PADDING_BOTTOM : 56,
     LEFT_BOUNDARY : -100,
     RIGHT_BOUNDARY_PADDING : 50,
-    DEFAULT_NUM_ROWS : 8,
-    DEFAULT_NUM_COLUMNS : 7,
+    NUM_ROWS : 8,
+    NUM_COLUMNS : 7,
     DEFAULT_PLAYER_SPRITE : 'images/char-boy.png',
     DEFAULT_ENEMY_COUNT : 3,
     COLLISION_WIDTH : 50
@@ -40,7 +40,9 @@ var GameConstants = {
         }
     ],
     STARTING_LIVES : 3,
-    MOVING_LOG_SPEED : 15
+    MOVING_LOG_SPEED : 10,
+    WATER_ROW_START : 1,
+    WATER_ROW_COUNT : 2
 };
 
 // defines location in terms of column and rows
@@ -66,6 +68,25 @@ Location.prototype.setColumn = function(column) {
 
 };
 
+// used when Player is "on the log". allows for the x coord to be updated and the column if need be
+// so the player will move with the log
+
+Location.prototype.setColumnViaXValue = function(x) {
+    this.x = x;
+    var column = Math.floor(this.x / DisplayConstants.COLUMN_WIDTH);
+    var remainder = Math.floor(this.x % DisplayConstants.COLUMN_WIDTH);
+
+    // if remainder is negative then subtract its value from the COLUMN_WIDTH.
+    // this ensures the player can go slightly off the board on the left side
+    if(remainder < 0) {
+        remainder = DisplayConstants.COLUMN_WIDTH + remainder;
+    }
+    if(remainder > DisplayConstants.COLUMN_WIDTH / 2) {
+        column++;
+    }
+    this.column = column;
+}
+
 var Options = function() {
     this.playerSprite = DisplayConstants.DEFAULT_PLAYER_SPRITE;
     this.enemyCount = DisplayConstants.DEFAULT_ENEMY_COUNT;
@@ -74,8 +95,8 @@ var Options = function() {
 };
 
 Options.prototype.setViewSize = function(rows, columns) {
-    this.rows = rows ? rows : DisplayConstants.DEFAULT_NUM_ROWS;
-    this.columns = columns ? columns : DisplayConstants.DEFAULT_NUM_COLUMNS;
+    this.rows = rows ? rows : DisplayConstants.NUM_ROWS;
+    this.columns = columns ? columns : DisplayConstants.NUM_COLUMNS;
     this.viewHeight = this.rows * DisplayConstants.ROW_HEIGHT + DisplayConstants.VIEW_HEIGHT_PADDING;
     this.viewWidth = this.columns * DisplayConstants.COLUMN_WIDTH;
     this.difficulty = 0;
@@ -194,6 +215,17 @@ var RiverStone = function(row, startingColumn, movingRight) {
     this.location.setColumn(startingColumn);
 };
 
+var allRiverStones;
+
+RiverStone.initRiverStones = function() {
+    allRiverStones = [];
+    // 4 stones each row
+    for(var i = 0; i < 4; i++) {
+        allRiverStones.push(new RiverStone(1, i * 2, true));
+        allRiverStones.push(new RiverStone(2, i * 2, false));
+    }
+}
+
 RiverStone.prototype = Object.create(MovingEntity.prototype);
 RiverStone.prototype.constructor = MovingEntity;
 
@@ -227,6 +259,7 @@ Enemy.prototype.constructor = MovingEntity;
 var Player = function() {
     this.sprite = options.playerSprite;
     this.location = new Location(null, null);
+    this.speed = GameConstants.MOVING_LOG_SPEED;
     this.returnToStart();
 };
 
@@ -236,16 +269,48 @@ Player.prototype.returnToStart = function() {
 };
 
 Player.prototype.update = function(dt) {
-    for(var i = 0; i < allEnemies.length; i++)
-    {
-        if(Helpers.collision(allEnemies[i], this))
-        {
-            gameState.lifeLoss();
-            this.location.setRow(options.rows - 1);
-            this.location.setColumn(Math.floor(options.columns/2));
-            break;
+
+    if(this.location.row >= GameConstants.WATER_ROW_START && this.location.row < GameConstants.WATER_ROW_START + GameConstants.WATER_ROW_COUNT) {
+        // first iteration: if not on water lose life
+        var onRock = false;
+        var i = 0;
+        for(; i < allRiverStones.length; i++) {
+            if(Helpers.collision(allRiverStones[i], this)) {
+                onRock = true;
+                break;
+            }
+        }
+
+        if (!onRock) {
+            this.lifeLossDetected();
+        }
+        else {
+            // need to insert go off the screen detection
+            var absoluteHorizontalChange = (10 * this.speed * dt);
+            if(!allRiverStones[i].movingRight) {
+                absoluteHorizontalChange = -absoluteHorizontalChange;
+            }
+            this.location.setColumnViaXValue(this.location.x + absoluteHorizontalChange);
+            if(this.location.column < 0 || this.location.column >= DisplayConstants.NUM_COLUMNS) {
+                this.lifeLossDetected();
+            }
+        }
+
+    }
+    else {
+        for(var i = 0; i < allEnemies.length; i++) {
+            if(Helpers.collision(allEnemies[i], this)) {
+                this.lifeLossDetected();
+                break;
+            }
         }
     }
+};
+
+Player.prototype.lifeLossDetected = function() {
+    gameState.lifeLoss();
+    this.location.setRow(options.rows - 1);
+    this.location.setColumn(Math.floor(options.columns/2));
 };
 
 Player.prototype.render = function() {
@@ -328,19 +393,14 @@ var gameState = new GameState();
 
 var allEnemies;
 var player;
-var allRiverStones;
+
 
 function initializeObjects() {
     allEnemies = [];
     for(var i = 0; i < GameConstants.DIFFICULTY[options.difficulty].enemyCount; i++) {
         allEnemies.push(new Enemy());
     }
-    allRiverStones = [];
-    // 4 stones each row
-    for(var i = 0; i < 4; i++) {
-        allRiverStones.push(new RiverStone(1, i * 2, true));
-        allRiverStones.push(new RiverStone(2, i * 2, false));
-    }
+    RiverStone.initRiverStones();
     player = new Player();
 };
 

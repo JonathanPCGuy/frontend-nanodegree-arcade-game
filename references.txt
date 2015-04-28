@@ -16,3 +16,5 @@ http://stackoverflow.com/questions/13040684/javascript-inheritance-object-create
 
 
 http://stackoverflow.com/questions/12027282/javascript-property-inheritance
+
+http://stackoverflow.com/questions/4228356/integer-division-in-javascript
