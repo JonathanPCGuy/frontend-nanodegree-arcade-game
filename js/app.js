@@ -17,7 +17,8 @@ var DisplayConstants = {
     NUM_COLUMNS : 7,
     DEFAULT_PLAYER_SPRITE : 'images/char-boy.png',
     DEFAULT_ENEMY_COUNT : 3,
-    COLLISION_WIDTH : 50
+    COLLISION_WIDTH : 50,
+    TREASURE_Y_OFFSET: -10
 };
 
 // holds constants related to the logic/setting of the game
@@ -42,7 +43,10 @@ var GameConstants = {
     STARTING_LIVES : 3,
     MOVING_LOG_SPEED : 10,
     WATER_ROW_START : 1,
-    WATER_ROW_COUNT : 2
+    WATER_ROW_COUNT : 2,
+    TREASURE_FREQUENCY: 15000,
+    REACH_END_SCORE : 1,
+    TREASURE_SCORE: 2
 };
 
 // defines location in terms of column and rows
@@ -203,6 +207,7 @@ MovingEntity.prototype.render = function() {
 // Moving river stones
 var RiverStone = function(row, startingColumn, movingRight) {
     this.sprite = 'images/stone-block.png';
+    this.treasureSprite = 'images/Star.png';
     this.minRow = 1;
     this.maxRow = 3;
     this.row = row;
@@ -210,12 +215,13 @@ var RiverStone = function(row, startingColumn, movingRight) {
     this.yOffset = -DisplayConstants.BACKGROUND_TILE_PADDING_TOP + DisplayConstants.OBJECT_PADDING_TOP;
     this.isMovingLog = true;
     this.speed = this.movingRight ? GameConstants.MOVING_LOG_SPEED : -GameConstants.MOVING_LOG_SPEED;
+    this.hasTreasure = true;
     MovingEntity.call(this, startingColumn);
     this.location.setRow(this.row, this.yOffset);
     this.location.setColumn(startingColumn);
 };
 
-var allRiverStones;
+
 
 RiverStone.initRiverStones = function() {
     allRiverStones = [];
@@ -226,15 +232,35 @@ RiverStone.initRiverStones = function() {
     }
 }
 
+RiverStone.calculateNextTreasure = function() {
+    this.nextTreasureTime = Date.now() + GameConstants.TREASURE_FREQUENCY;
+    this.nextTreasureRow = Helpers.randomInteger(GameConstants.WATER_ROW_START, GameConstants.WATER_ROW_START + GameConstants.WATER_ROW_COUNT);
+}
+
+
+
 RiverStone.prototype = Object.create(MovingEntity.prototype);
 RiverStone.prototype.constructor = MovingEntity;
 
 RiverStone.prototype.setNewParams = function() {
+    this.hasTreasure = false;
     if( this.movingRight) {
         this.location.x = DisplayConstants.LEFT_BOUNDARY;
     }
     else {
         this.location.x = options.viewWidth + DisplayConstants.RIGHT_BOUNDARY_PADDING;
+    }
+
+    if(Date.now() > RiverStone.nextTreasureTime && this.location.row === RiverStone.nextTreasureRow) {
+        RiverStone.calculateNextTreasure();
+        this.hasTreasure = true;
+    }
+};
+
+RiverStone.prototype.render = function() {
+    MovingEntity.prototype.render.call(this);
+    if(this.hasTreasure) {
+        ctx.drawImage(Resources.get(this.treasureSprite), this.location.x, this.location.y + DisplayConstants.TREASURE_Y_OFFSET);
     }
 };
 
@@ -250,8 +276,6 @@ var Enemy = function() {
 
 Enemy.prototype = Object.create(MovingEntity.prototype);
 Enemy.prototype.constructor = MovingEntity;
-
-
 
 // Now write your own player class
 // This class requires an update(), render() and
@@ -277,6 +301,11 @@ Player.prototype.update = function(dt) {
         for(; i < allRiverStones.length; i++) {
             if(Helpers.collision(allRiverStones[i], this)) {
                 onRock = true;
+                if(allRiverStones[i].hasTreasure)
+                {
+                    gameState.increaseScore(GameConstants.TREASURE_SCORE);
+                    allRiverStones[i].hasTreasure = false;
+                }
                 break;
             }
         }
@@ -345,7 +374,7 @@ Player.prototype.destinationCheck = function(newLocation) {
         return;
     }
     else if (newLocation.row == 0) {
-        gameState.increaseScore(1);
+        gameState.increaseScore(GameConstants.REACH_END_SCORE);
         this.location.setRow(options.rows -1);
     }
     else {
@@ -393,7 +422,7 @@ var gameState = new GameState();
 
 var allEnemies;
 var player;
-
+var allRiverStones;
 
 function initializeObjects() {
     allEnemies = [];
@@ -405,6 +434,7 @@ function initializeObjects() {
 };
 
 initializeObjects();
+RiverStone.calculateNextTreasure();
 
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
