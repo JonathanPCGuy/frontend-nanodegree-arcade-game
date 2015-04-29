@@ -1,8 +1,3 @@
-// TODO: make use of other assets and add new gametypes
-
-
-// TODO: Final project will allow classic (as shown in video) and enhanced (moving river)
-
 // holds constants related to display aspects of the games
 var DisplayConstants = {
     ROW_HEIGHT : 83,
@@ -23,9 +18,6 @@ var DisplayConstants = {
 
 // holds constants related to the logic/setting of the game
 var GameConstants = {
-    // although there is only 1 parameter in each element,
-    // it allows the flexibility to add additional parameters to
-    // difficulty settings (like lives, enemy behavior, etc.)
     DIFFICULTY : [
         {
             "enemyCount": 3
@@ -46,7 +38,9 @@ var GameConstants = {
     WATER_ROW_COUNT : 2,
     TREASURE_FREQUENCY: 15000,
     REACH_END_SCORE : 1,
-    TREASURE_SCORE: 2
+    TREASURE_SCORE: 2,
+    ADDITIONAL_ENEMY_AFTER_END_REACH_FREQUENCY : 3,
+    MAX_ENEMIES: 12
 };
 
 // defines location in terms of column and rows
@@ -374,8 +368,9 @@ Player.prototype.destinationCheck = function(newLocation) {
         return;
     }
     else if (newLocation.row == 0) {
-        gameState.increaseScore(GameConstants.REACH_END_SCORE);
+        gameState.increaseScore(GameConstants.REACH_END_SCORE, true);
         this.location.setRow(options.rows -1);
+        this.location.setColumn(Math.floor(options.columns/2));
     }
     else {
         this.location = newLocation;
@@ -384,13 +379,26 @@ Player.prototype.destinationCheck = function(newLocation) {
 
 // holds the state of the game (score, lives, etc.)
 var GameState = function() {
-    this.score = 0;
-    this.lives = GameConstants.STARTING_LIVES;
+    this.resetState();
 };
 
-GameState.prototype.increaseScore = function(value) {
+GameState.prototype.resetState = function() {
+    this.score = 0;
+    this.lives = GameConstants.STARTING_LIVES;
+    this.timesEndReached = 0;
+};
+
+GameState.prototype.increaseScore = function(value, endReached) {
     this.score += value;
     this.updateScore();
+
+    if(typeof endReached !== 'undefined') {
+        this.timesEndReached++;
+        if(allEnemies.length < GameConstants.MAX_ENEMIES && this.timesEndReached > 0 &&
+                this.timesEndReached % GameConstants.ADDITIONAL_ENEMY_AFTER_END_REACH_FREQUENCY === 0) {
+            allEnemies.push(new Enemy());
+        }
+    }
 };
 
 GameState.prototype.updateScore = function() {
@@ -403,8 +411,10 @@ GameState.prototype.lifeLoss = function() {
         // reset score and lives, and display the game over modal
         $('#yourScore').text('Your score:' + this.score);
         this.score = 0;
+        this.timesEndReached = 0;
         this.updateScore();
         this.lives = GameConstants.STARTING_LIVES;
+        initializeObjects();
         $('#gameOver').modal();
     }
     this.updateLives();
@@ -430,11 +440,12 @@ function initializeObjects() {
         allEnemies.push(new Enemy());
     }
     RiverStone.initRiverStones();
+    RiverStone.calculateNextTreasure();
     player = new Player();
 };
 
 initializeObjects();
-RiverStone.calculateNextTreasure();
+
 
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
