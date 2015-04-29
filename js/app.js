@@ -1,3 +1,4 @@
+// TODO: Readme, tweak difficulty / game speed, meet udacity styles
 // holds constants related to display aspects of the games
 var DisplayConstants = {
     ROW_HEIGHT : 83,
@@ -463,7 +464,7 @@ document.addEventListener('keyup', function(e) {
 // This listens for button clicks in the difficulty area, and handles
 // difficulty change events
 $(document).ready(function() {
-
+    $('#instructions').modal();
     gameState.updateScore();
     gameState.updateLives();
     var newDifficultySet = false;
