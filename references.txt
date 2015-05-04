@@ -13,8 +13,8 @@ http://stackoverflow.com/questions/7918803/flip-a-sprite-in-canvas
 -could flip it one time and save for future use...
 
 http://stackoverflow.com/questions/13040684/javascript-inheritance-object-create-vs-new
-
-
 http://stackoverflow.com/questions/12027282/javascript-property-inheritance
+-refreshing inheritance concepts
 
 http://stackoverflow.com/questions/4228356/integer-division-in-javascript
+-learning how to do modolous division in javascript

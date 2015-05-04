@@ -1,47 +1,41 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Effective JavaScript: Frogger</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/bootstrap.css">
-    <script src="js/jQuery.js"></script>
-    <script src="js/bootstrap.js"></script>
-    <script src="js/resources.js"></script>
-    <script src="js/app.js"></script>
-    <script src="js/engine.js"></script>
+  <meta charset="utf-8"/>
+  <title>Effective JavaScript: Frogger</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/bootstrap.css">
+  <script src="js/jQuery.js"></script>
+  <script src="js/bootstrap.js"></script>
+  <script src="js/resources.js"></script>
+  <script src="js/constants.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/engine.js"></script>
 </head>
 <body>
   <div class="container">
     <main class="row">
-      <div class="col-md-10 center-block" >
+      <div class="col-md-9 center-block" >
         <!-- div for game canvas-->
         <div id="gameBoard"></div>
       </div>
-      <div class="col-md-2 align-top-gameboard" id="scoreContainer">
-        <h1 id="score"></h1>
-        <h1 id="lives"></h1>
-      </div>
-    </main>
-    <footer class="row">
-      <div class="col-md-12" id="gameOptions">
-        <h3>Difficulty</h3>
-        <div class="btn-group" id="difficultySection" role="group" data-toggle="buttons">
-          <label class="btn btn-primary active" id="easyDifficulty">
-            <input type="radio" name="options" autocomplete="off" value="1" checked>Easy
-          </label>
-          <label class="btn btn-primary" id="mediumDifficulty" >
-            <input type="radio" name="options" autocomplete="off" value="2" checked>Medium
-          </label>
-          <label class="btn btn-primary" id="hardDifficulty">
-            <input type="radio" name="options"  autocomplete="off" value="3" checked>Hard
-          </label>
-          <label class="btn btn-primary" id="insaneDifficulty">
-            <input type="radio" name="options"  autocomplete="off" value="4" checked>Insane
-          </label>
+      <aside class="col-md-3 align-top-gameboard" >
+        <div class="row">
+          <div class="col-md-12" id="scoreContainer">
+            <h2>Score: <span id="score"></span></h2>
+            <h2>Lives: <span id="lives"></span></h2>
+          </div>
         </div>
-      </div>
-    </footer>
+        <div class="row">
+          <div class="col-md-12">
+            <button type="button" id="gameSettingsButton" class="btn btn-primary gameButtons">Game Settings</button>
+            <button type="button" id="instructionsButton" class="btn btn-primary gameButtons">Instructions</button>
+          </div>
+        </div>
+      </aside>
+    </main>
   </div>
+  <!-- popup dialogs could be consolidated and refactured to eliminate duplicate code -->
   <!-- game over dialog -->
   <div class="modal fade" id="gameOver" tabindex="-1" role="dialog" aria-labelledby="gameOverLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -50,7 +44,8 @@
           <h1 id="gameOverLabel">Game Over!</h1>
         </header>
         <div class="modal-body">
-          <h3 id="yourScore"></h3>
+          <h3>Your score: <span id="yourScore"></span></h3>
+          <h3>High score: <span id="highScore"></span></h3>
         </div>
         <footer class="modal-footer">
           <button type="button" class="btn btn-primary" data-dismiss="modal">Start New Game</button>
@@ -59,21 +54,56 @@
     </div>
   </div>
   <!-- instruction dialog -->
-  <div class="modal fade" id="instructions" tabindex="-1" role="dialog" aria-labelledby="gameOverLabel" aria-hidden="true">
+  <div class="modal fade" id="instructions" tabindex="-1" role="dialog" aria-labelledby="instructionsLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <header class="modal-header">
-          <h1>Instructions</h1>
+        <h1 id="instructionsLabel">Instructions</h1>
         </header>
         <div class="modal-body">
+          <h3>Move via the arrow keys on the keyboard.</h3>
           <h3>Reach the end to gain a point.</h3>
           <h3>Collect treasure stars to gain 2 points.</h3>
           <h3>Avoid water and enemy bugs.</h3>
+          <h3>More bugs will appear as the end is reached multiple times.</h3>
           <h3>If you lose all your lives, it's game over!</h3>
         </div>
         <footer class="modal-footer">
           <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
         </footer>
+      </div>
+    </div>
+  </div>
+  <!-- game settings dialog -->
+  <div class="modal fade" id="gameSettings" tabindex="-1" role="dialog" aria-labelledby="gameSettingsLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <header class="modal-header">
+          <h1 id="gameSettingsLabel">Game Settings</h1>
+        </header>
+        <div class="modal-body">
+          <h3>Difficulty</h3>
+          <div class="btn-group" id="difficultySection" role="group" data-toggle="buttons">
+            <label class="btn btn-primary active" id="easyDifficulty">
+              <input type="radio" name="options" value="0" checked>Easy
+            </label>
+            <label class="btn btn-primary" id="mediumDifficulty" >
+              <input type="radio" name="options" value="1" checked>Medium
+            </label>
+            <label class="btn btn-primary" id="hardDifficulty">
+              <input type="radio" name="options" value="2" checked>Hard
+            </label>
+            <label class="btn btn-primary" id="insaneDifficulty">
+              <input type="radio" name="options" value="3" checked>Insane
+            </label>
+          </div>
+          <div id="gameOptionsInfo">
+            <h4>Start the game with <span id="enemyCount"></span> enemies.</h4>
+          </div>
+          <footer class="modal-footer">
+            <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
+          </footer>
+        </div>
       </div>
     </div>
   </div>

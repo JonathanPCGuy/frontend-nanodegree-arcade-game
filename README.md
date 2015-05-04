@@ -1,9 +1,9 @@
-// TODO: guide for game to show how to run/"install", how to play, etc.
-
-
 frontend-nanodegree-arcade-game
 ===============================
 
-Students should use this rubric: https://www.udacity.com/course/viewer#!/c-ud015/l-3072058665/m-3072588797
+How to install:
+-Download the entire contents of the repository
+-Open the index.html file
 
-for self-checking their submission.
+How to play:
+-Instructions will pop up when the game is opened.
